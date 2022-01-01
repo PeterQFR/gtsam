@@ -35,20 +35,10 @@ namespace gtsam {
   }
 
   /* ************************************************************************* */
-//  void DiscreteBayesNet::add_front(const Signature& s) {
-//    push_front(boost::make_shared<DiscreteConditional>(s));
-//  }
-
-  /* ************************************************************************* */
-  void DiscreteBayesNet::add(const Signature& s) {
-    push_back(boost::make_shared<DiscreteConditional>(s));
-  }
-
-  /* ************************************************************************* */
   double DiscreteBayesNet::evaluate(const DiscreteValues & values) const {
     // evaluate all conditionals and multiply
     double result = 1.0;
-    for(DiscreteConditional::shared_ptr conditional: *this)
+    for(const DiscreteConditional::shared_ptr& conditional: *this)
       result *= (*conditional)(values);
     return result;
   }
@@ -71,5 +61,15 @@ namespace gtsam {
     return result;
   }
 
+  /* ************************************************************************* */
+  std::string DiscreteBayesNet::markdown(
+      const KeyFormatter& keyFormatter) const {
+    using std::endl;
+    std::stringstream ss;
+    ss << "`DiscreteBayesNet` of size " << size() << endl << endl;
+    for(const DiscreteConditional::shared_ptr& conditional: *this)
+      ss << conditional->markdown(keyFormatter) << endl;
+    return ss.str();
+  }
 /* ************************************************************************* */
 } // namespace
