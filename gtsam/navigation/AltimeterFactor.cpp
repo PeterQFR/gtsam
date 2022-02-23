@@ -43,7 +43,7 @@ bool AltimeterFactor::equals(const NonlinearFactor& expected,
 }
 
 //***************************************************************************
-Vector BarometricFactor::evaluateError(const Pose3& p, const double& bias,
+Vector AltimeterFactor::evaluateError(const Pose3& p, const double& bias,
                                        boost::optional<Matrix&> H,
                                        boost::optional<Matrix&> H2) const {
     Matrix tH;
