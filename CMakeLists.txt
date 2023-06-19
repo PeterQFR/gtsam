@@ -57,7 +57,8 @@ include(cmake/HandleMKL.cmake)              # MKL
 include(cmake/HandleOpenMP.cmake)           # OpenMP
 include(cmake/HandlePerfTools.cmake)        # Google perftools
 include(cmake/HandlePython.cmake)           # Python options and commands
-include(cmake/HandleTBB.cmake)              # TBB
+
+#include(cmake/HandleTBB.cmake)              # TBB
 include(cmake/HandleUninstall.cmake)        # for "make uninstall"
 
 include(cmake/HandleAllocators.cmake)       # Must be after tbb, pertools
