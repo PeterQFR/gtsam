@@ -15,7 +15,7 @@ virtual class SymbolicFactor : gtsam::Factor {
   SymbolicFactor(size_t j1, size_t j2, size_t j3, size_t j4, size_t j5);
   SymbolicFactor(size_t j1, size_t j2, size_t j3, size_t j4, size_t j5,
                  size_t j6);
-  static gtsam::SymbolicFactor FromKeys(const gtsam::KeyVector& js);
+  static gtsam::SymbolicFactor FromKeys(const gtsam::KeyVector& keys);
 
   // From Factor
   void print(string s = "SymbolicFactor",
@@ -35,7 +35,7 @@ virtual class SymbolicFactorGraph {
   void print(string s = "SymbolicFactorGraph",
              const gtsam::KeyFormatter& keyFormatter =
                  gtsam::DefaultKeyFormatter) const;
-  bool equals(const gtsam::SymbolicFactorGraph& rhs, double tol) const;
+  bool equals(const gtsam::SymbolicFactorGraph& fg, double tol) const;
   size_t size() const;
   bool exists(size_t idx) const;
 
@@ -101,7 +101,7 @@ virtual class SymbolicConditional : gtsam::SymbolicFactor {
   // Testable
   void print(string s = "", const gtsam::KeyFormatter& keyFormatter =
                                 gtsam::DefaultKeyFormatter) const;
-  bool equals(const gtsam::SymbolicConditional& other, double tol) const;
+  bool equals(const gtsam::SymbolicConditional& c, double tol) const;
 
   // Standard interface
   gtsam::Key firstFrontalKey() const;
@@ -117,7 +117,7 @@ class SymbolicBayesNet {
   void print(string s = "SymbolicBayesNet",
              const gtsam::KeyFormatter& keyFormatter =
                  gtsam::DefaultKeyFormatter) const;
-  bool equals(const gtsam::SymbolicBayesNet& other, double tol) const;
+  bool equals(const gtsam::SymbolicBayesNet& bn, double tol) const;
 
   // Standard interface
   size_t size() const;
@@ -185,6 +185,8 @@ class SymbolicBayesTreeClique {
   const gtsam::SymbolicConditional* conditional() const;
   bool isRoot() const;
   gtsam::SymbolicBayesTreeClique* parent() const;
+  size_t nrChildren() const;
+  gtsam::SymbolicBayesTreeClique* operator[](size_t j) const;
   size_t treeSize() const;
   size_t numCachedSeparatorMarginals() const;
   void deleteCachedShortcuts();
@@ -204,7 +206,7 @@ class SymbolicBayesTree {
   // Standard Interface
   bool empty() const;
   size_t size() const;
-
+  const SymbolicBayesTree::Roots& roots() const;
   const gtsam::SymbolicBayesTreeClique* operator[](size_t j) const;
 
   void saveGraph(string s,

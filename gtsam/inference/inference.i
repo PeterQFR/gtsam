@@ -96,6 +96,19 @@ unsigned char mrsymbolChr(size_t key);
 unsigned char mrsymbolLabel(size_t key);
 size_t mrsymbolIndex(size_t key);
 
+#include <gtsam/inference/EdgeKey.h>
+class EdgeKey {
+  EdgeKey(std::uint32_t i, std::uint32_t j);
+  EdgeKey(size_t key);
+  EdgeKey(const gtsam::EdgeKey& key);
+
+  std::uint32_t i() const;
+  std::uint32_t j() const;
+  size_t key() const;
+
+  void print(string s = "") const;
+};
+
 #include <gtsam/inference/Ordering.h>
 class Ordering {
   /// Type of ordering to use
@@ -109,7 +122,9 @@ class Ordering {
   template <
       FACTOR_GRAPH = {gtsam::NonlinearFactorGraph, gtsam::DiscreteFactorGraph,
                       gtsam::SymbolicFactorGraph, gtsam::GaussianFactorGraph, gtsam::HybridGaussianFactorGraph}>
+                      
   static gtsam::Ordering Colamd(const FACTOR_GRAPH& graph);
+  static gtsam::Ordering Colamd(const gtsam::VariableIndex& variableIndex);
 
   template <
       FACTOR_GRAPH = {gtsam::NonlinearFactorGraph, gtsam::DiscreteFactorGraph,
@@ -128,7 +143,7 @@ class Ordering {
   template <
       FACTOR_GRAPH = {gtsam::NonlinearFactorGraph, gtsam::DiscreteFactorGraph,
                       gtsam::SymbolicFactorGraph, gtsam::GaussianFactorGraph, gtsam::HybridGaussianFactorGraph}>
-  static gtsam::Ordering Natural(const FACTOR_GRAPH& graph);
+  static gtsam::Ordering Natural(const FACTOR_GRAPH& fg);
 
   template <
       FACTOR_GRAPH = {gtsam::NonlinearFactorGraph, gtsam::DiscreteFactorGraph,
@@ -144,7 +159,7 @@ class Ordering {
   // Testable
   void print(string s = "", const gtsam::KeyFormatter& keyFormatter =
                                 gtsam::DefaultKeyFormatter) const;
-  bool equals(const gtsam::Ordering& ord, double tol) const;
+  bool equals(const gtsam::Ordering& other, double tol) const;
 
   // Standard interface
   size_t size() const;
@@ -177,14 +192,13 @@ class DotWriter {
 class VariableIndex {
   // Standard Constructors and Named Constructors
   VariableIndex();
-  // TODO: Templetize constructor when wrap supports it
-  // template<T = {gtsam::FactorGraph}>
-  // VariableIndex(const T& factorGraph, size_t nVariables);
-  // VariableIndex(const T& factorGraph);
-  VariableIndex(const gtsam::SymbolicFactorGraph& sfg);
-  VariableIndex(const gtsam::GaussianFactorGraph& gfg);
-  VariableIndex(const gtsam::NonlinearFactorGraph& fg);
+  template <T = {gtsam::SymbolicFactorGraph, gtsam::GaussianFactorGraph,
+                 gtsam::NonlinearFactorGraph}>
+  VariableIndex(const T& factorGraph);
   VariableIndex(const gtsam::VariableIndex& other);
+
+  gtsam::FactorIndices& at(gtsam::Key variable) const;
+  bool empty(gtsam::Key variable) const;
 
   // Testable
   bool equals(const gtsam::VariableIndex& other, double tol) const;
