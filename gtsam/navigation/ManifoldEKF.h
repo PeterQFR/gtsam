@@ -179,6 +179,7 @@ namespace gtsam {
               "ManifoldEKF::update: Jacobian H columns must match state dimension " + std::to_string(n_) + ".");
           }
         }
+        (void) m_runtime;
       }
 
       // Innovation: y = z - h(x_pred). In tangent space: local(h(x_pred), z)
