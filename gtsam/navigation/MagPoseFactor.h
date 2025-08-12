@@ -241,13 +241,13 @@ public:
     // Predict the measured magnetic field h(x) in the *body* frame.
     // If body_P_sensor was given, bias_ will have been rotated into the body frame.
     Matrix H_rot = Matrix::Zero(MeasDim, RotDim);
-    const Point hx = Rot::Yaw(nPb.rotation().yaw()).unrotate(nM_, H_rot, OptionalNone) + bias_;
+    const Point hx = nPb.rotation().unrotate(nM_, H_rot, OptionalNone) + bias_;
 
     if (H) {
       // Fill in the relevant part of the Jacobian (just rotation about z columns).
       *H = Matrix::Zero(MeasDim, PoseDim);
       const size_t rot_col0 = nPb.rotationInterval().first;
-      (*H).block(0, rot_col0+2, MeasDim, RotDim-1) = H_rot.col(2);
+      (*H).block(0, rot_col0+2, MeasDim, RotDim-2) = H_rot.col(2);
     }
 
     return (hx - measured_);

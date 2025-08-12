@@ -28,7 +28,8 @@ Point3 nM(22653.29982, -1956.83010, 44202.47862);
 double scale = 255.0 / 50000.0;
 
 // Ground truth Pose2/Pose3 in the nav frame.
-Pose3 n_P3_b = Pose3(Rot3::Yaw(-0.1), Point3(-3, 12, 5));
+Pose3 n_P3_b = Pose3(Rot3::Yaw(-M_PI_2), Point3(-3, 12, 5));
+Pose3 n_P3_b_error = Pose3(Rot3::RzRyRx(-0.2, 0.1, M_PI_2), Point3(-3, 12, 5));
 Pose2 n_P2_b = Pose2(Rot2(-0.1), Point2(-3, 12));
 Rot3 n_R3_b = n_P3_b.rotation();
 Rot2 n_R2_b = n_P2_b.rotation();
@@ -42,6 +43,7 @@ Point2 dir2(nM.head(2).normalized());
 
 // Compute the measured field in the sensor frame.
 Point3 measured3 = n_R3_b.inverse() * (scale * dir3) + bias3;
+Point3 measured3_error = n_P3_b_error.rotation().inverse() * (scale * dir3) + bias3;
 
 // The 2D magnetometer will measure the "NE" field components.
 Point2 measured2 = n_R2_b.inverse() * (scale * dir2) + bias2;
@@ -95,6 +97,19 @@ TEST(MagPoseFactor, JacobianPose3) {
                              n_P3_b),
                             H3, 1e-7));
 }
+// *****************************************************************************
+TEST(MagPoseFactor, JacobianPoseZ3) {
+  Matrix H3;
+
+  // Error should be zero at the groundtruth pose.
+  MagPoseFactorZ f(Symbol('X', 0), measured3_error, scale, dir3, bias3, model3, {});
+  CHECK(gtsam::assert_equal(Z_3x1, f.evaluateError(n_P3_b_error, H3), 1e-5));
+  CHECK(gtsam::assert_equal(gtsam::numericalDerivative11<Vector, Pose3>  //
+                            ([&f] (const Pose3& p) {return f.evaluateError(p);},
+                             n_P3_b_error),
+                            H3, 1e-7));
+
+}
 
 // *****************************************************************************
 TEST(MagPoseFactor, body_P_sensor2) {
@@ -123,6 +138,7 @@ TEST(MagPoseFactor, body_P_sensor3) {
   CHECK(gtsam::assert_equal(gtsam::numericalDerivative11<Vector, Pose3> //
       ([&f] (const Pose3& p) {return f.evaluateError(p);}, n_P3_b), H3, 1e-7));
 }
+
 
 // *****************************************************************************
 int main() {
