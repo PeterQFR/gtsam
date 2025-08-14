@@ -62,7 +62,7 @@ class GTSAM_EXPORT BarometricFactor : public NoiseModelFactorN<Pose3, double> {
      */
     BarometricFactor(Key key, Key baroKey, const double& baroIn,
                      const SharedNoiseModel& model)
-        : Base(model, key, baroKey), nT_(heightOut(baroIn)) {}
+        : Base(model, key, baroKey), nT_(-heightOut(baroIn)) {}
 
     /// @return a deep copy of this factor
     gtsam::NonlinearFactor::shared_ptr clone() const override {
@@ -80,7 +80,7 @@ class GTSAM_EXPORT BarometricFactor : public NoiseModelFactorN<Pose3, double> {
                 double tol = 1e-9) const override;
 
     /// vector of errors
-    Vector evaluateError(const Pose3& p, const double& b, 
+    Vector evaluateError(const Pose3& p, const double& b,
             OptionalMatrixType H, OptionalMatrixType H2) const override;
 
     inline const double& measurementIn() const { return nT_; }
