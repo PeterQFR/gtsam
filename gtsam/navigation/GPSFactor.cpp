@@ -66,6 +66,54 @@ pair<Pose3, Vector3> GPSFactor::EstimateState(double t1, const Point3& NED1,
 }
 
 //***************************************************************************
+void BiasedGPSFactor::print(const string& s, const KeyFormatter& keyFormatter) const {
+  cout << (s.empty() ? "" : s + " ") << "GPSFactor on " << keyFormatter(key())
+       << "\n";
+  cout << "  GPS measurement: " << nT_ << "\n";
+  noiseModel_->print("  noise model: ");
+}
+
+//***************************************************************************
+bool BiasedGPSFactor::equals(const NonlinearFactor& expected, double tol) const {
+  const This* e = dynamic_cast<const This*>(&expected);
+  return e != nullptr && Base::equals(*e, tol) && traits<Point3>::Equals(nT_, e->nT_, tol);
+}
+
+//***************************************************************************
+Vector BiasedGPSFactor::evaluateError(const Pose3& nTb, const Point3& eM,
+    OptionalMatrixType H, OptionalMatrixType H2) const {
+
+   Vector e = nTb.translation(H) + eM - nT_;
+   if (H2) (*H2) = (Matrix33::Identity());
+
+
+  return nTb.translation(H) + eM - nT_;
+}
+
+//***************************************************************************
+pair<Pose3, Vector3> BiasedGPSFactor::EstimateState(double t1, const Point3& NED1,
+    double t2, const Point3& NED2, double timestamp) {
+  // Estimate initial velocity as difference in NED frame
+  double dt = t2 - t1;
+  Point3 nV = (NED2 - NED1) / dt;
+
+  // Estimate initial position as linear interpolation
+  Point3 nT = NED1 + nV * (timestamp - t1);
+
+  // Estimate Rotation
+  double yaw = atan2(nV.y(), nV.x());
+  Rot3 nRy = Rot3::Yaw(yaw); // yaw frame
+  Point3 yV = nRy.inverse() * nV; // velocity in yaw frame
+  double pitch = -atan2(yV.z(), yV.x()), roll = 0;
+  Rot3 nRb = Rot3::Ypr(yaw, pitch, roll);
+
+  // Construct initial pose
+  Pose3 nTb(nRb, nT); // nTb
+
+  return make_pair(nTb, nV);
+}
+
+//***************************************************************************
 void GPSFactorArm::print(const string& s, const KeyFormatter& keyFormatter) const {
   cout << s << "GPSFactorArm on " << keyFormatter(key()) << "\n";
   cout << "  GPS measurement: " << nT_.transpose() << "\n";
